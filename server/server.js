@@ -9,12 +9,12 @@ var {User} = require('./models/user');
 // and that object is gonna be the reutrn result from requiring the file we jsut created
 
 
-var app = express();
+var app = express();  //start express
 
-app.use(bodyParser.json());
+app.use(bodyParser.json());   //use bodyparser json type
 
 app.post('/todos', (req, res) => {
-  var todo = new Todo({   //create new todo
+  var todo = new Todo({   //create new todo list
     text: req.body.text   //fetch data from user
   });
 
@@ -30,3 +30,5 @@ app.post('/todos', (req, res) => {
 app.listen(3000, () => {
   console.log('Started on port 3000');
 });
+
+module.exports = {app};

@@ -13,6 +13,8 @@ var app = express();  //start express
 
 app.use(bodyParser.json());   //use bodyparser json type
 
+
+//**post things on postman that gets fetched and stored into our local database
 app.post('/todos', (req, res) => {
   var todo = new Todo({   //create new todo list
     text: req.body.text   //fetch data from user
@@ -23,15 +25,16 @@ app.post('/todos', (req, res) => {
   }, (err) => {
     res.status(400).send(err);
   });
-});
+});//**post things on postman that gets fetched and stored into our local database
 
+//**get things from our local database and deploy on local host
 app.get('/todos', (req, res) => {
-  Todo.find().then((todos) =>{
+  Todo.find().then((todos) =>{  //find everything in todolist and post on local host
     res.send({todos});
   }, (e) => {
     res.status(400).send(err);
-  })
-});
+  });
+});//**get things from our local database and deploy on local host
 
 app.listen(3000, () => {
   console.log('Started on port 3000');

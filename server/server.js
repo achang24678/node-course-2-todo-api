@@ -10,7 +10,7 @@ var {User} = require('./models/user');
 
 
 var app = express();  //start express
-const port = process.evn.PORT || 3000;    //set up app to use environment port variable that Heroku is going to set
+const port = process.env.PORT || 3000;    //set up app to use environment port variable that Heroku is going to set
                                           // if the Heroku port is there, we gonna use it, if not, we use 3000 local hose
 
 

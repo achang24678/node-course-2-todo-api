@@ -8,6 +8,7 @@ const {ObjectID} = require('mongodb');
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
+var {authenticate} = require('./middleware/authenticate');
 //creating a local variable called mongoose queal to the mongoose property on the object
 // and that object is gonna be the reutrn result from requiring the file we jsut created
 
@@ -101,16 +102,17 @@ app.patch('/todos/:id', (req,res) => {
       res.status(400).send();
     });
 });
+
 //setup post route  POST /users
 app.post('/users', (req, res) => {
   var body = _.pick(req.body, ['email', 'password']);
-  var user = new User(body);
+  var user = new User(body);    //using User
 
-  user.save().then((user) => {
+  user.save().then(() => {      //generating the token by calling the method in user.js, and adding it as a header
 
-    return user.generateAuthToken();
+    return user.generateAuthToken();      //generate the token and call back to then
 
-  }).then((token) => {
+  }).then((token) => {      //second then call back gets called with generated token value
 
     res.header('x-auth', token).send(user);
 
@@ -118,6 +120,15 @@ app.post('/users', (req, res) => {
     res.status(400).send(e);
   })
 });
+
+
+//first private route, find the user and send back id email
+app.get('/users/me', authenticate, (req, res) => {      //use middleware authenticate
+  res.send(req.user);
+});
+
+
+
 
 app.listen(port, () => {
   console.log(`Started up at port ${port}`);

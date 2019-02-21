@@ -78,7 +78,26 @@ UserSchema.statics.findByToken = function (token) {
     'tokens.token': token,    //quote is needed if there is a dot
     'tokens.access': 'auth'
   })
+};
 
+//findByCredentials - take email and password as arguments, its then gonna return a promise with a user or with an error if the user didnt exist
+UserSchema.statics.findByCredentials = function (email, password) {
+  var User = this;
+
+  return User.findOne({email}).then((user) => {
+    if (!user){
+      return Promise.reject();      //send back to catch((e) =>) in server.js
+    }
+    return new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, (err, res) => {
+          if(res){
+            resolve(user);
+          } else{
+            reject();
+          }
+      });
+    });
+  });
 };
 
 //mongoose middleware, UserSchema.pre let us save hashed password beforee running other code

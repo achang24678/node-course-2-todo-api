@@ -84,9 +84,8 @@ UserSchema.statics.findByToken = function (token) {
     // });
     return Promise.reject();      //can use this syntax, inside () is the value gets passed baack to catch(e) in server.js - /users/me
   }
-
   return User.findOne({
-    '_id': decoded._id,
+    '_id': decoded._id,         // we get the _id here
     'tokens.token': token,    //quote is needed if there is a dot
     'tokens.access': 'auth'
   })

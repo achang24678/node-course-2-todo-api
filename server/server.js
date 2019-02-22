@@ -22,9 +22,10 @@ app.use(bodyParser.json());   //use bodyparser json type
 
 
 //**post things on postman that gets fetched and stored into our local database
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
   var todo = new Todo({   //create new todo list
-    text: req.body.text   //fetch data from user
+    text: req.body.text,   //fetch data from user
+    _creator: req.user._id
   });
 
   todo.save().then((doc) =>{    //save the data from req.body.text to database(user input)
@@ -35,8 +36,10 @@ app.post('/todos', (req, res) => {
 });//**post things on postman that gets fetched and stored into our local database
 
 //**get things from our local database and deploy on local host
-app.get('/todos', (req, res) => {
-  Todo.find().then((todos) =>{  //find everything in todolist and post on local host
+app.get('/todos', authenticate, (req, res) => {
+  Todo.find({           //find todo in todolist for the currently user logged in and post on local host
+    _creator: req.user._id
+  }).then((todos) =>{
     res.send({todos});
   }, (e) => {
     res.status(400).send(err);
@@ -46,12 +49,17 @@ app.get('/todos', (req, res) => {
 
 
 //GET /todos/1234324
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
+
   if(!ObjectID.isValid(id)) {         //Valid id using isValid
     return res.status(404).send();    //404 - send back empty send
   }
-  Todo.findById(id).then((todo) => {    //findById
+  Todo.findOne({
+    _id: id,
+    _creator: req.user._id
+
+  }).then((todo) => {
     if(!todo) {                         // if no todo - send back 404 with empty body
       return res.status(404).send();
     }
@@ -61,12 +69,16 @@ app.get('/todos/:id', (req, res) => {
   });
 });
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
+
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
-  Todo.findByIdAndRemove(id).then((todo) => {
+  Todo.findOneAndRemove({
+    _id: id,
+    _creator: req.user._id
+  }).then((todo) => {
     if (!todo) {
       return res.status(404).send();
     }
@@ -76,7 +88,7 @@ app.delete('/todos/:id', (req, res) => {
   });
 });
 
-app.patch('/todos/:id', (req,res) => {
+app.patch('/todos/:id', authenticate, (req,res) => {
     var id = req.params.id;
     var body = _.pick(req.body, ['text', 'completed']);
 
@@ -92,7 +104,7 @@ app.patch('/todos/:id', (req,res) => {
       body.completedAt = null;
     }
 
-    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+    Todo.findOneAndUpdate({_id: id, _creator: req.user._id}, {$set: body}, {new: true}).then((todo) => {
       if(!todo) {
         return res.status(404).send();
       }
@@ -122,7 +134,7 @@ app.post('/users', (req, res) => {
 });
 
 
-//first private route, find the user and send back id email
+//first private route, find the user and send back id email, it is private beacuse we use authenticate middleware
 app.get('/users/me', authenticate, (req, res) => {      //use middleware authenticate
   res.send(req.user);
 });
@@ -140,7 +152,7 @@ app.post('/users/login', (req, res) =>{
   });
 });
 
-app.delete('/users/me/token', authenticate, (req, res) => {
+app.delete('/users/me/token', authenticate, (req, res) => {     //first post email and id -> then authenticate if the user is indeed in the database -> get req.user and req.token back for use
   req.user.removeToken(req.token).then(() => {
     res.status(200).send();
   }, () => {

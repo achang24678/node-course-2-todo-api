@@ -59,6 +59,18 @@ UserSchema.methods.generateAuthToken = function () {
   });
 };
 
+UserSchema.methods.removeToken = function (token) {
+  var user = this;    //instance method, set it to this
+
+  return user.update({
+    $pull: {
+      tokens: {
+        token: token      //if token does match something in that array  "function (token)", it is going to remove its entire object property
+      }
+    }
+  });
+};
+
 //static as an object kind of like methods, although everything you add onto it turns into a model method as opposed to an instance method
 UserSchema.statics.findByToken = function (token) {
   var User = this;    //instance methods gets called with the individual document (var user = this;) model method gets called with the model as the This binding

@@ -50,7 +50,7 @@ app.get('/todos', authenticate, (req, res) => {
 
 //GET /todos/1234324
 app.get('/todos/:id', authenticate, (req, res) => {
-  var id = req.params.id;
+  var id = req.params.id;         //mongo auto generate a _id property, we grab it by using params.id
 
   if(!ObjectID.isValid(id)) {         //Valid id using isValid
     return res.status(404).send();    //404 - send back empty send
